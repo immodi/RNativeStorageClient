@@ -1,4 +1,8 @@
-import React, { AriaAttributes, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { FileSystemItem } from '../interfaces/FileSystemItems';
+import getFileSystem from '../helpers/GetData';
+import Stack from '../helpers/Stack';
+
 import {  
     FlatList,
     TouchableOpacity,
@@ -8,59 +12,40 @@ import {
 } from "react-native";
 
 function FileSystem() {
-    let item1: Item = {
-        name: "test folder",
-        dbId: 1,
-        id: 1,
-        type: 'folder',
-        size: 0
-    }
-    let item2: Item = {
-        name: "test file",
-        dbId: 2,
-        id: 2,
-        type: 'file',
-        size: 1024
-    }
-
-
-    const [fileSystemData, setFileSystemData] = useState<Item[]>([
-        item1, item2
-    ]);
-    // const [directorysHistoryStack, setDirectorysHistoryStack] = useState(new Stack(1));
+    const [fileSystemData, setFileSystemData] = useState<FileSystemItem[]>([]);
+    const [directorysHistoryStack, setDirectorysHistoryStack] = useState(new Stack(1));
     const [selectedItem, setSelectedItem] = useState<any>(null);
-    // const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
-    // useEffect(()=> {
-    //     getFileSystem(1, setFileSystemData);
-    //     BackHandler.addEventListener("hardwareBackPress", () => {
-    //         let newStack = directorysHistoryStack.pop()
-    //         if (newStack) {
-    //             refreshFileSystem(newStack, setFileSystemData, setDirectorysHistoryStack, setLoading);
-    //             console.log("removed item");
-    //         }
-    //         return true
-    //     })
-    // }, [])
+    useEffect(()=> {
+        getFileSystem(1, setFileSystemData);
+        BackHandler.addEventListener("hardwareBackPress", () => {
+            let newStack = directorysHistoryStack.pop()
+            if (newStack) {
+                refreshFileSystem(newStack, setFileSystemData, setDirectorysHistoryStack, setLoading);
+                console.log("removed item");
+            }
+            return true
+        })
+    }, [])
     
-    // useEffect(() => {
-    //     setLoading(false)
-    // }, [fileSystemData])
+    useEffect(() => {
+        setLoading(false)
+    }, [fileSystemData])
 
-    interface Item {
-        id: number;
-        type: 'folder' | 'file';
-        name: string;
-        dbId: number;
-        size: number;
-    }
 
-    const handleItemPress = (item: Item) => {    
+    const handleItemPress = (item: FileSystemItem) => {          
         setSelectedItem(item);
-        // if (item.type === 'folder' && directorysHistoryStack.peek() !== item.dbId) {
-        //     refreshFileSystem(directorysHistoryStack.push(item.dbId), setFileSystemData, setDirectorysHistoryStack, setLoading);
-        //     console.log("added new item");
-        // }
+        if (item.type === 'folder' && directorysHistoryStack.peek() !== item.dbId) {
+            refreshFileSystem(
+                directorysHistoryStack.push(item.dbId),
+                setFileSystemData,
+                setDirectorysHistoryStack,
+                setLoading
+            );
+        
+            console.log("added new item");
+        }
 
         // if (item.type === 'file') {
         //     router.push({
@@ -74,7 +59,7 @@ function FileSystem() {
         // }
     };
 
-    const renderItem = ({ item }: {item: Item}) => (
+    const renderItem = ({ item }: {item: FileSystemItem}) => (
         <TouchableOpacity onPress={() => handleItemPress(item)}>
             <View className='p-2 border-b flex-row flex border-gray-300'>
                 <Text className='text-base'>
@@ -88,8 +73,7 @@ function FileSystem() {
     
 
     return (
-        // !loading
-        !false
+        !loading
         ?
         <View className='flex-1'>
             <Text className='text-xl font-bold p-4'>File System</Text>
@@ -120,6 +104,13 @@ function FileSystem() {
     
     );
 };
+
+
+function refreshFileSystem(newStack: Stack<number> | null, setFileSystemData: any, setDirectorysHistoryStack: any, setLoading: any) {
+    setLoading(true)    
+    if (newStack) getFileSystem(newStack.peek(), setFileSystemData)
+    setDirectorysHistoryStack(newStack)
+}
 
 const getBaseName = (path: string): string => {
     return path.split("/")[path.split("/").length-1]
