@@ -7,14 +7,17 @@ import {
     BackHandler
 } from 'react-native';
 import FileSystem from '../components/FileSystem';
-
+import FileCard from './FileCard';
+import { NativeRouter, Route, Routes } from "react-router-native";
 
 function App(): React.JSX.Element {
     return (
-        // <View className='bg-white w-screen min-h-screen h-screen'>
-        //     <Text className='text-lg text-red-700'>Hello world</Text>
-        // </View>
-        <FileSystem />    
+        <NativeRouter>
+            <Routes>
+                <Route path='/' Component={FileSystem}></Route>
+                <Route path='/FileCard' Component={FileCard}></Route>
+            </Routes>
+        </NativeRouter>
     )
 };
 

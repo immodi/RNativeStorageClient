@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FileSystemItem } from '../interfaces/FileSystemItems';
 import getFileSystem from '../helpers/GetData';
 import Stack from '../helpers/Stack';
+import { useNavigate } from 'react-router-native';
 
 import {  
     FlatList,
@@ -16,6 +17,7 @@ function FileSystem() {
     const [directorysHistoryStack, setDirectorysHistoryStack] = useState(new Stack(1));
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    let navigate = useNavigate();
 
     useEffect(()=> {
         getFileSystem(1, setFileSystemData);
@@ -47,16 +49,15 @@ function FileSystem() {
             console.log("added new item");
         }
 
-        // if (item.type === 'file') {
-        //     router.push({
-        //         pathname: "/file",
-        //         params: {
-        //             id: item.dbId,
-        //             name: item.name,
-        //             size: getItemSizeString(item.size)
-        //         }
-        //     })
-        // }
+        if (item.type === 'file') {            
+            navigate('FileCard', {
+                state: {
+                    id: item.dbId,
+                    name: item.name,
+                    size: getItemSizeString(item.size)
+                },
+            });
+        }
     };
 
     const renderItem = ({ item }: {item: FileSystemItem}) => (
